@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Classifier</title>
+    <!-- Use Inter font for a modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --surface-border: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --spam-color: #ef4444;
+            --spam-bg: rgba(239, 68, 68, 0.1);
+            --ham-color: #10b981;
+            --ham-bg: rgba(16, 185, 129, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--surface-border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+            transition: var(--transition);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .examples {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .example-btn {
+            background: transparent;
+            border: 1px solid var(--surface-border);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .example-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .primary-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .primary-btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .primary-btn:active {
+            transform: translateY(0);
+        }
+
+        .primary-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .result-label {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .result-confidence {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .is-spam {
+            background-color: var(--spam-bg);
+            border: 2px solid var(--spam-color);
+            color: var(--spam-color);
+        }
+
+        .is-ham {
+            background-color: var(--ham-bg);
+            border: 2px solid var(--ham-color);
+            color: var(--ham-color);
+        }
+
+        .history-section {
+            margin-top: 1rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        .history-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .history-item {
+            background-color: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            border-color: #475569;
+            transform: translateX(4px);
+        }
+
+        .history-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 1rem;
+            color: var(--text-primary);
+        }
+
+        .history-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .history-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-spam {
+            background-color: var(--spam-color);
+            color: white;
+        }
+
+        .badge-ham {
+            background-color: var(--ham-color);
+            color: white;
+        }
+
+        .error-message {
+            display: none;
+            color: var(--spam-color);
+            margin-top: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 2.2rem; }
+            .card { padding: 1.5rem; }
+            .history-item { flex-direction: column; gap: 0.75rem; }
+            .history-text { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+            .history-meta { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Spam or Ham?</h1>
+            <p class="subtitle">Enter a message below to classify it instantly.</p>
+        </header>
+
+        <main class="card">
+            <div class="input-group">
+                <textarea id="messageInput" placeholder="Paste your email or SMS message here..." maxlength="5000"></textarea>
+                
+                <div>
+                    <span class="subtitle" style="font-size: 0.85rem;">Try an example:</span>
+                    <div class="examples">
+                        <button class="example-btn" onclick="setExample('WINNER!! As a valued customer you have won $1000 cash prize! Text CLAIM to 88088 now.')">Spam Example</button>
+                        <button class="example-btn" onclick="setExample('Hey, are we still on for lunch tomorrow at 12? Let me know.')">Ham Example 1</button>
+                        <button class="example-btn" onclick="setExample('URGENT! Your account has been suspended. Click here to verify your details: http://fake-link.com')">Spam Example 2</button>
+                    </div>
+                </div>
+
+                <button id="checkBtn" class="primary-btn" onclick="checkMessage()">
+                    <span>Check Message</span>
+                    <div class="spinner" id="btnSpinner"></div>
+                </button>
+                <div id="errorMsg" class="error-message"></div>
+            </div>
+
+            <div id="resultBox" class="result-container">
+                <div id="resultLabel" class="result-label"></div>
+                <div id="resultConfidence" class="result-confidence"></div>
+            </div>
+        </main>
+
+        <section class="history-section">
+            <h2>Recent Checks</h2>
+            <div id="historyList" class="history-list">
+                <!-- History items injected here -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadHistory);
+
+        function setExample(text) {
+            document.getElementById('messageInput').value = text;
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('errorMsg').style.display = 'none';
+        }
+
+        async function checkMessage() {
+            const input = document.getElementById('messageInput').value;
+            const btn = document.getElementById('checkBtn');
+            const spinner = document.getElementById('btnSpinner');
+            const resultBox = document.getElementById('resultBox');
+            const resultLabel = document.getElementById('resultLabel');
+            const resultConfidence = document.getElementById('resultConfidence');
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (!input || !input.trim()) {
+                errorMsg.textContent = "Please enter a message first.";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (input.length > 5000) {
+                errorMsg.textContent = "Message is too long. Max 5000 characters.";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // UI Loading state
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            btn.querySelector('span').textContent = 'Analyzing...';
+            errorMsg.style.display = 'none';
+            resultBox.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: input })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to analyze message');
+                }
+
+                // Show result
+                resultLabel.textContent = data.label;
+                resultConfidence.textContent = `${(data.confidence * 100).toFixed(1)}% Confidence`;
+                
+                resultBox.className = 'result-container';
+                if (data.label === 'SPAM') {
+                    resultBox.classList.add('is-spam');
+                } else {
+                    resultBox.classList.add('is-ham');
+                }
+                
+                resultBox.style.display = 'block';
+                
+                // Refresh history
+                loadHistory();
+                
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                // Restore UI
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                btn.querySelector('span').textContent = 'Check Message';
+            }
+        }
+
+        async function loadHistory() {
+            const historyList = document.getElementById('historyList');
+            try {
+                const response = await fetch('/api/history');
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error();
+                
+                historyList.innerHTML = '';
+                
+                if (data.length === 0) {
+                    historyList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem;">No recent checks.</div>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'history-item';
+                    
+                    const badgeClass = item.label === 'SPAM' ? 'badge-spam' : 'badge-ham';
+                    const time = new Date(item.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    el.innerHTML = `
+                        <div class="history-text" title="${item.message.replace(/"/g, '&quot;')}">${item.message}</div>
+                        <div class="history-meta">
+                            <span style="color: var(--text-secondary); font-size: 0.85rem;">${(item.confidence * 100).toFixed(1)}%</span>
+                            <span class="history-badge ${badgeClass}">${item.label}</span>
+                        </div>
+                    `;
+                    historyList.appendChild(el);
+                });
+            } catch (err) {
+                console.error("Could not load history", err);
+            }
+        }
+    </script>
+</body>
+</html>

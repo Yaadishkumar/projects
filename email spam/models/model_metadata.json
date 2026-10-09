@@ -1,0 +1,63 @@
+{
+    "best_model_name": "Multinomial Naive Bayes",
+    "best_hyperparameters": {
+        "alpha": 0.05
+    },
+    "metrics": {
+        "accuracy": 0.9825918762088974,
+        "precision": 0.9747899159663865,
+        "recall": 0.8854961832061069,
+        "f1_score": 0.928,
+        "roc_auc": 0.9926791948805086,
+        "false_positives": 3,
+        "false_negatives": 15,
+        "true_positives": 116,
+        "true_negatives": 900,
+        "fpr": 0.0033222591362126247
+    },
+    "all_models_summary": [
+        {
+            "Model": "Multinomial Naive Bayes",
+            "Accuracy": 0.9825918762088974,
+            "Precision": 0.9747899159663865,
+            "Recall": 0.8854961832061069,
+            "F1-Score": 0.928,
+            "ROC-AUC": 0.9926791948805086,
+            "True Negatives": 900,
+            "False Positives": 3,
+            "False Negatives": 15,
+            "True Positives": 116,
+            "FPR": 0.0033222591362126247,
+            "Best Parameters": "{'alpha': 0.05}"
+        },
+        {
+            "Model": "Logistic Regression",
+            "Accuracy": 0.9796905222437138,
+            "Precision": 0.9296875,
+            "Recall": 0.9083969465648855,
+            "F1-Score": 0.918918918918919,
+            "ROC-AUC": 0.9956548570075997,
+            "True Negatives": 894,
+            "False Positives": 9,
+            "False Negatives": 12,
+            "True Positives": 119,
+            "FPR": 0.009966777408637873,
+            "Best Parameters": "{'C': 10.0, 'solver': 'liblinear'}"
+        },
+        {
+            "Model": "Linear SVM",
+            "Accuracy": 0.9816247582205029,
+            "Precision": 0.9375,
+            "Recall": 0.916030534351145,
+            "F1-Score": 0.9266409266409267,
+            "ROC-AUC": 0.9955449603949516,
+            "True Negatives": 895,
+            "False Positives": 8,
+            "False Negatives": 11,
+            "True Positives": 120,
+            "FPR": 0.008859357696566999,
+            "Best Parameters": "{'C': 0.5}"
+        }
+    ],
+    "vocab_size": 5000
+}
